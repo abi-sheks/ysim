@@ -10,5 +10,7 @@ int main(int argc, char**argv)
     }
     Assembler assembler = Assembler(std::string(argv[1]));
     assembler.assemble();
+    assembler.print_instructions();
+    assembler.print_machine_instructions();
     return 0;
 }

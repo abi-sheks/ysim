@@ -1,11 +1,9 @@
 #pragma once
+#include "token.h"
 #include <vector>
 #include <iostream>
 #include <sstream>
 #include <string>
-
-typedef std::pair<std::string, std::string> token;
-
 // simply takes in an instruction and outputs a tokenized version
 class Lexer
 {
@@ -22,22 +20,26 @@ public:
             {
                 if (temp[temp.length() - 1] == ':')
                 {
-                    tokens.push_back(std::pair("Label", temp.substr(0, temp.length() - 1)));
+                    tokens.push_back(std::pair(TokenType::LABEL, temp.substr(0, temp.length() - 1)));
                 }
                 else
                 {
-                    tokens.push_back(std::pair("Identifier", temp));
+                    tokens.push_back(std::pair(TokenType::IDENTIFIER, temp));
                 }
             }
             else if (temp[0] == '%')
             {
                 auto reg_name = temp.substr(1, temp.length());
-                tokens.push_back(std::pair("Register", reg_name));
+                tokens.push_back(std::pair(TokenType::REGISTER, reg_name));
             }
             else if (temp[0] == '$')
             {
                 auto literal = temp.substr(1, temp.length());
-                tokens.push_back(std::pair("Literal", literal));
+                tokens.push_back(std::pair(TokenType::LITERAL, literal));
+            }
+            else
+            {
+                tokens.push_back(std::pair(TokenType::INVALID, ""));
             }
         }
         return tokens;

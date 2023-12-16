@@ -1,2 +1,4 @@
-irmovq $0 %rax
+halt
+nop
+andq %rbx %rdx
 xorq %rax %rax

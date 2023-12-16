@@ -2,12 +2,14 @@
 #include <iostream>
 #include <vector>
 #include "lexer.h"
+#include "parser.h"
 #include <fstream>
 
 class Assembler
 {
 private:
     std::vector<std::string> instructions;
+    std::vector<std::string> machine_instructions;
 
 public:
     Assembler(std::string filename)
@@ -28,20 +30,34 @@ public:
     }
     void assemble()
     {
+        //errors handled at this stage
         Lexer lexer;
+        Parser parser;
         for (auto &instruction : instructions)
         {
+            try
+            {      
             auto tokens = lexer.tokenize(instruction);
-            for (auto &token : tokens)
-            {
-                std::cout << token.first << " : " << token.second << " ";
+            auto machine_code = parser.parse(tokens);
+            machine_instructions.push_back(machine_code);
             }
-            std::cout << std::endl;
+            catch(std::string error)
+            {
+                std::cerr << error << '\n';
+            }
+            
         }
     }
     void print_instructions()
     {
         for (auto &instruction : instructions)
+        {
+            std::cout << instruction << "\n";
+        }
+    }
+    void print_machine_instructions()
+    {
+        for (auto &instruction : machine_instructions)
         {
             std::cout << instruction << "\n";
         }
