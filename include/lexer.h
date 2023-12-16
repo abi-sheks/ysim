@@ -1,5 +1,6 @@
 #pragma once
 #include "token.h"
+#include "utilities.h"
 #include <vector>
 #include <iostream>
 #include <sstream>
@@ -11,10 +12,8 @@ public:
     std::vector<token> tokenize(const std::string &instr)
     {
         std::vector<token> tokens;
-        std::stringstream mystream(instr);
-        std::string temp;
-        char delim = ' ';
-        while (std::getline(mystream, temp, delim))
+        std::vector<std::string> words = split_into_whitespaces(instr);
+        for (auto &temp : words)
         {
             if (temp[0] >= 97 && temp[0] <= 122)
             {

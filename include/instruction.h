@@ -1,3 +1,4 @@
+#pragma once
 enum Instruction
 {
     HALT,
@@ -6,5 +7,12 @@ enum Instruction
     ANDQ,
     XORQ,
     SUBQ,
+    RRMOVQ,
+    CMOVLE,
+    CMOVL,
+    CMOVE,
+    CMOVNE,
+    CMOVGE,
+    CMOVG,
     INCORRECT
 };

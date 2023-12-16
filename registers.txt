@@ -1,0 +1,15 @@
+rax 0
+rcx 1
+rdx 2
+rbx 3
+rsp 4
+rbp 5
+rsi 6
+rdi 7
+r8 8
+r9 9
+r10 A
+r11 B
+r12 C
+r13 D
+r14 E

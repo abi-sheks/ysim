@@ -1,4 +1,5 @@
 halt
 nop
-andq %rbx %rdx
+cmovle %r1 rax
+andq %r10 %r8
 xorq %rax %rax

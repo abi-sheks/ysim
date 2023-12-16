@@ -30,22 +30,21 @@ public:
     }
     void assemble()
     {
-        //errors handled at this stage
+        // errors handled at this stage
         Lexer lexer;
         Parser parser;
         for (auto &instruction : instructions)
         {
             try
-            {      
-            auto tokens = lexer.tokenize(instruction);
-            auto machine_code = parser.parse(tokens);
-            machine_instructions.push_back(machine_code);
+            {
+                auto tokens = lexer.tokenize(instruction);
+                auto machine_code = parser.parse(tokens);
+                machine_instructions.push_back(machine_code);
             }
-            catch(std::string error)
+            catch (std::string error)
             {
                 std::cerr << error << '\n';
             }
-            
         }
     }
     void print_instructions()

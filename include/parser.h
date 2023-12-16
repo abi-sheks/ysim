@@ -1,9 +1,9 @@
 #pragma once
 #include "instruction.h"
+#include "utilities.h"
 #include <iostream>
 #include <vector>
-
-enum TokenType;
+#include "token.h"
 
 class Parser
 {
@@ -58,25 +58,17 @@ public:
 private:
     Instruction get_instruction(token token)
     {
+        auto instr_to_enum = get_instr_to_enum();
         if (token.first != TokenType::IDENTIFIER)
         {
             throw "ERROR : Not an identifier";
         }
-        // return corresponding instruction type
-        if (token.second == "halt")
-            return Instruction::HALT;
-        else if (token.second == "nop")
-            return Instruction::NOP;
-        else if (token.second == "addq")
-            return Instruction::ADDQ;
-        else if (token.second == "andq")
-            return Instruction::ANDQ;
-        else if (token.second == "subq")
-            return Instruction::SUBQ;
-        else if (token.second == "xorq")
-            return Instruction::XORQ;
-        else
+        // return corresponding instruction type, imported map from utilities
+        if (instr_to_enum.find(token.second) == instr_to_enum.end())
+        {
             return Instruction::INCORRECT;
+        }
+        return instr_to_enum.find(token.second)->second;
     }
     // pretty big function
     bool check_syntax(Instruction instr, std::vector<token> tokens)
@@ -89,16 +81,27 @@ private:
             // no way this should be encountered, but just in case
             return false;
         }
-        if (instr == Instruction::HALT || instr == Instruction::NOP)
+        // zero register
+        if (instr == Instruction::HALT ||
+            instr == Instruction::NOP)
         {
             // zero register instructions
             if (tokens.size() != 1)
                 return false;
         }
+
+        // 2 register
         if (instr == Instruction::ANDQ ||
             instr == Instruction::ANDQ ||
             instr == Instruction::XORQ ||
-            instr == Instruction::SUBQ)
+            instr == Instruction::SUBQ ||
+            instr == Instruction::RRMOVQ ||
+            instr == Instruction::CMOVLE ||
+            instr == Instruction::CMOVL ||
+            instr == Instruction::CMOVE ||
+            instr == Instruction::CMOVNE ||
+            instr == Instruction::CMOVGE ||
+            instr == Instruction::CMOVG)
         {
             // must be three tokens (2 reg arguments)
             if (tokens.size() != 3)
@@ -114,61 +117,61 @@ private:
 
     std::string translate_to_machine(Instruction instr, std::vector<token> tokens)
     {
+        auto codes = get_codes();
+        auto function_specs = get_function_specs();
         // currently just returns a formatted hex string for my clarity, will later return a proper binary string
         // assumes that the given list of tokens is verified and valid
         // will abstract translation rules elsewhere
         std::string code = "0x ";
-        if (instr == Instruction::INCORRECT)
-            throw "ERROR : Invalid";
-        if (instr == Instruction::HALT)
-            code.append("00 FF");
-        if (instr == Instruction::NOP)
-            code.append("10 FF");
-        if (instr == Instruction::ADDQ || instr == Instruction::ANDQ || instr == Instruction::SUBQ || instr == Instruction::XORQ)
+        auto code_part = codes.find(instr);
+        auto func_part = function_specs.find(instr);
+        if (code_part == codes.end() || func_part == function_specs.end())
         {
-            code.append("6");
-            if (instr == Instruction::ADDQ)
-                code.append("0 ");
-            if (instr == Instruction::SUBQ)
-                code.append("1 ");
-            if (instr == Instruction::ANDQ)
-                code.append("2 ");
-            if (instr == Instruction::XORQ)
-                code.append("3 ");
-            try
+            throw "ERROR : Invalid";
+        }
+        code.append(code_part->second);
+        code.append(func_part->second);
+        try
+        {
+            // translate registers (already verified that they are valid registers), but could be NOP or HALT handled inside
+            // handle for non 2-reg cases (got greedy for cleanliness and shat on my logic here lol)
+            if (instr == Instruction::HALT || Instruction::NOP)
             {
-                // translate registers (already verified that they are valid registers)
-                auto rA = get_register_code(tokens[1]);
-                auto rB = get_register_code(tokens[2]);
+                code.append("FF");
+            }
+            else
+            {
+                auto rA = get_register_code(tokens[1], instr);
+                auto rB = get_register_code(tokens[2], instr);
                 code.append(rA);
                 code.append(rB);
-                // no constant word currently
             }
-            catch (std::string error)
-            {
-                throw error;
-            }
+            // no constant word currently
+        }
+        catch (std::string error)
+        {
+            throw error;
         }
         return code;
     }
-    std::string get_register_code(token reg_token)
+    std::string get_register_code(token reg_token, Instruction instr)
     {
+        if (instr == Instruction::INCORRECT)
+            throw "ERROR : Invalid";
+        // get_registers() for reg_ref
+        auto registers = get_registers();
         if (reg_token.first != TokenType::REGISTER)
         {
             throw "ERROR : Not a register token";
         }
-        // hardcoding here for now, will extract elsewhere later
-        // supports 4 registers for now, will hardcode rest later
         auto reg = reg_token.second;
-        if (reg == "rax")
-            return "0";
-        else if (reg == "rcx")
-            return "1";
-        else if (reg == "rdx")
-            return "2";
-        else if (reg == "rbx")
-            return "3";
-        else
+        if (registers.find(reg) == registers.end())
+        {
             throw "ERROR : Unspecified register";
+        }
+        else
+        {
+            return registers.find(reg)->second;
+        }
     }
 };
