@@ -4,6 +4,7 @@
 
 enum TokenType
 {
+    ADDRESS,
     IDENTIFIER,
     REGISTER, 
     LITERAL,

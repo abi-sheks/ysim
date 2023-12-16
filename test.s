@@ -1,5 +1,9 @@
 halt
 nop
-cmovle %r1 rax
-andq %r10 %r8
-xorq %rax %rax
+addq %rbx %rax
+ret
+pushq %rbx
+popq %rbx
+mrmovq 8(%rax) %rbx
+rmmovq %rbx 9(%rax)
+rrmovq %rcx %r8

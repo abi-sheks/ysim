@@ -3,13 +3,14 @@
 #include "utilities.h"
 #include <iostream>
 #include <vector>
+#include <sstream>
 #include "token.h"
 
 class Parser
 {
 public:
     Parser() {}
-    std::string parse(std::vector<token> instr_token)
+    typed_mi first_parse(std::vector<token> instr_token, std::string &next_address)
     {
         // given a stream of tokens, the first token must be either an identifier or a label
         // parser will look up syntax according to identifier and verify, then translate to machine code.
@@ -36,6 +37,7 @@ public:
             try
             {
                 Instruction gen_instr = get_instruction(instr_token[0]);
+
                 if (gen_instr == Instruction::INCORRECT)
                     throw "ERROR : Invalid instruction";
 
@@ -44,7 +46,15 @@ public:
                     throw "ERROR : Invalid instruction";
                 }
                 auto machine_instr = translate_to_machine(gen_instr, instr_token);
+                // still current instructions address
+                instructions.append(zero_extend_hex(next_address));
+                instructions.append("\t");
                 instructions.append(machine_instr);
+                // compute next address based on instruction and update next_address for next token
+                // dummy value
+                auto final_address = next_address;
+                next_address = compute_next_address(gen_instr, next_address);
+                return std::pair(gen_instr, instructions);
             }
             catch (std::string error)
             {
@@ -52,7 +62,8 @@ public:
                 throw error;
             }
         }
-        return instructions;
+        // default, should not encounter
+        return std::pair(Instruction::INCORRECT, std::string(""));
     }
 
 private:
@@ -81,13 +92,28 @@ private:
             // no way this should be encountered, but just in case
             return false;
         }
-        // zero register
+        // zero register (one address token)
         if (instr == Instruction::HALT ||
-            instr == Instruction::NOP)
+            instr == Instruction::NOP ||
+            instr == Instruction::RET)
         {
-            // zero register instructions
-            if (tokens.size() != 1)
+            if (tokens.size() != 2)
                 return false;
+        }
+
+        // 1 register (one address)
+        if (instr == Instruction::PUSHQ ||
+            instr == Instruction::POPQ)
+        {
+            if (tokens.size() != 3)
+            {
+                return false;
+            }
+            // must be register
+            if (tokens[1].first != TokenType::REGISTER)
+            {
+                return false;
+            }
         }
 
         // 2 register
@@ -103,11 +129,34 @@ private:
             instr == Instruction::CMOVGE ||
             instr == Instruction::CMOVG)
         {
-            // must be three tokens (2 reg arguments)
-            if (tokens.size() != 3)
+            // must be 4 tokens (2 reg arguments) (one address token)
+            if (tokens.size() != 4)
                 return false;
             // must be register args
             if (tokens[1].first != TokenType::REGISTER || tokens[2].first != TokenType::REGISTER)
+                return false;
+        }
+        // 1 reg 1 literal
+        if (instr == Instruction::IRMOVQ)
+        {
+            if (tokens.size() != 4)
+                return false;
+            if (tokens[1].first != TokenType::LITERAL || tokens[2].first != TokenType::REGISTER)
+                return false;
+        }
+        // 2 reg 1 literal
+        if (instr == Instruction::MRMOVQ)
+        {
+            if (tokens.size() != 5)
+                return false;
+            if (tokens[1].first != TokenType::LITERAL || tokens[2].first != TokenType::REGISTER || tokens[3].first != TokenType::REGISTER)
+                return false;
+        }
+        if (instr == Instruction::RMMOVQ)
+        {
+            if (tokens.size() != 5)
+                return false;
+            if (tokens[1].first != TokenType::REGISTER || tokens[2].first != TokenType::LITERAL || tokens[3].first != TokenType::REGISTER)
                 return false;
         }
         // one of the guard clauses entered, and no false returned.
@@ -135,14 +184,53 @@ private:
         {
             // translate registers (already verified that they are valid registers), but could be NOP or HALT handled inside
             // handle for non 2-reg cases (got greedy for cleanliness and shat on my logic here lol)
-            if (instr == Instruction::HALT || Instruction::NOP)
+            if (instr == Instruction::HALT || instr == Instruction::NOP || instr == Instruction::RET)
             {
-                code.append("FF");
+            }
+            else if (instr == Instruction::IRMOVQ)
+            {
+                auto rB = get_register_code(tokens[2], instr);
+                code.append(" ");
+                code.append("F");
+                code.append(rB);
+                code.append(" ");
+                code.append(zero_extend_hex(tokens[1].second));
+            }
+            else if (instr == Instruction::MRMOVQ)
+            {
+                auto rB = get_register_code(tokens[2], instr);
+                auto rA = get_register_code(tokens[3], instr);
+                code.append(" ");
+                code.append(rA);
+                code.append(rB);
+                code.append(" ");
+                code.append(zero_extend_hex(tokens[1].second));
+            }
+            else if (instr == Instruction::RMMOVQ)
+            {
+                auto rB = get_register_code(tokens[1], instr);
+                auto rA = get_register_code(tokens[3], instr);
+                code.append(" ");
+                code.append(rA);
+                code.append(rB);
+                code.append(" ");
+                code.append(zero_extend_hex(tokens[2].second));
+            }
+            else if (instr == Instruction::POPQ || instr == Instruction::PUSHQ)
+            {
+                // dont want to use else as catch all branch, its causing subtle bugs
+                // i prefer this explicity even though LOC increases.
+                auto rA = get_register_code(tokens[1], instr);
+                code.append(" ");
+                code.append(rA);
+                code.append("F");
             }
             else
             {
+                // opq
                 auto rA = get_register_code(tokens[1], instr);
                 auto rB = get_register_code(tokens[2], instr);
+                code.append(" ");
                 code.append(rA);
                 code.append(rB);
             }
@@ -173,5 +261,26 @@ private:
         {
             return registers.find(reg)->second;
         }
+    }
+    std::string compute_next_address(Instruction instr, std::string current_address)
+    {
+        std::string next_addr;
+        // converting string to int
+        int addr_in_bytes = 0;
+        std::stringstream to_int;
+        to_int << current_address;
+        to_int >> addr_in_bytes;
+        // adding +8 for 1 byte
+        auto offsets = get_offsets();
+        if (offsets.find(instr) == offsets.end())
+        {
+            throw "ERROR : Invalid instruction";
+        }
+        auto req_offset = offsets.find(instr)->second;
+        addr_in_bytes += req_offset;
+        std::stringstream to_string;
+        to_string << addr_in_bytes;
+        to_string >> next_addr;
+        return next_addr;
     }
 };
