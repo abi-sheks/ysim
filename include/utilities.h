@@ -14,7 +14,7 @@ typedef std::map<Instruction, int> offset_map;
 
 const std::string REGISTER_FILE_NAME = "../registers.txt";
 
-std::vector<std::string> split_into_whitespaces(std::string instr)
+std::vector<std::string> split_at_whitespaces(std::string instr)
 {
     std::stringstream mystream(instr);
     std::string temp;
@@ -35,7 +35,7 @@ register_reference get_registers()
     std::string line;
     while (std::getline(file_handle, line))
     {
-        auto reg_info = split_into_whitespaces(line);
+        auto reg_info = split_at_whitespaces(line);
         result.emplace(reg_info[0], reg_info[1]);
     }
     return result;
@@ -74,6 +74,16 @@ instruction_reference get_instr_to_enum()
         // memory <-> register (2 reg, 1 constant word)
         {"rmmovq", Instruction::RMMOVQ},
         {"mrmovq", Instruction::MRMOVQ},
+
+        // call/jump (no reg, 1 constant word)
+        {"call", Instruction::CALL},
+        {"jmp", Instruction::JMP},
+        {"jle", Instruction::JLE},
+        {"jl", Instruction::JL},
+        {"je", Instruction::JE},
+        {"jne", Instruction::JNE},
+        {"jge", Instruction::JGE},
+        {"jg", Instruction::JG},
     };
     return instr_to_enum;
 }
@@ -113,6 +123,16 @@ specifier_reference get_codes()
         {Instruction::RMMOVQ, "4"},
         {Instruction::MRMOVQ, "5"},
 
+        // call/jump (no reg, 1 constant word)
+        {Instruction::CALL, "8"},
+        {Instruction::JMP, "7"},
+        {Instruction::JLE, "7"},
+        {Instruction::JL, "7"},
+        {Instruction::JE, "7"},
+        {Instruction::JNE, "7"},
+        {Instruction::JGE, "7"},
+        {Instruction::JG, "7"},
+
     };
     return codes;
 }
@@ -150,6 +170,16 @@ specifier_reference get_function_specs()
         // memory <-> register (2 reg, 1 constant word)
         {Instruction::RMMOVQ, "0"},
         {Instruction::MRMOVQ, "0"},
+
+        // call/jump (no reg, 1 constant word)
+        {Instruction::CALL, "0"},
+        {Instruction::JMP, "0"},
+        {Instruction::JLE, "1"},
+        {Instruction::JL, "2"},
+        {Instruction::JE, "3"},
+        {Instruction::JNE, "4"},
+        {Instruction::JGE, "5"},
+        {Instruction::JG, "6"},
     };
     return function_specs;
 }
@@ -188,11 +218,21 @@ offset_map get_offsets()
         // memory <-> register (2 reg, 1 constant word)
         {Instruction::RMMOVQ, 80},
         {Instruction::MRMOVQ, 80},
+
+        // call/jump (no reg, 1 constant word)
+        {Instruction::CALL, 72},
+        {Instruction::JMP, 72},
+        {Instruction::JLE, 72},
+        {Instruction::JL, 72},
+        {Instruction::JE, 72},
+        {Instruction::JNE, 72},
+        {Instruction::JGE, 72},
+        {Instruction::JG, 72},
     };
     return offsets;
 }
 
-//will change to sign extend later
+// will change to sign extend later
 std::string zero_extend_hex(std::string number)
 {
     std::stringstream to_int;
@@ -200,8 +240,8 @@ std::string zero_extend_hex(std::string number)
     to_int << number;
     to_int >> num;
     std::stringstream to_hex;
-    to_hex << "0x" 
-           << std::setfill ('0') << std::setw(sizeof(int)*2)
-           <<std::hex << num;
+    to_hex << "0x"
+           << std::setfill('0') << std::setw(sizeof(int) * 2)
+           << std::hex << num;
     return to_hex.str();
 }

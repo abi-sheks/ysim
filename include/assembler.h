@@ -36,35 +36,41 @@ public:
         Parser parser;
         std::string base_address = "0";
         std::vector<std::vector<token>> all_tokens;
-        //first pass
+        // first pass
         for (auto &instruction : instructions)
         {
             try
             {
                 auto tokens = lexer.tokenize(instruction);
-                for(auto& token : tokens)
+                for (auto &token : tokens)
                 {
-                    if(token.first == TokenType::INVALID)
+                    if (token.first == TokenType::INVALID)
                     {
                         throw "ERROR : Invalid syntax";
                     }
                 }
-                // base address for all
+                // current address
                 tokens.push_back(std::pair(TokenType::ADDRESS, base_address));
-                //for second pass
+                // for second pass
                 all_tokens.push_back(tokens);
-                //first_parse will change base_address according to instruction
+                // first_parse will change base_address according to instruction
+                // unless it is label, in which case address is untouched.
                 auto machine_code = parser.first_parse(tokens, base_address);
-                machine_instructions.push_back(machine_code);
+                if (machine_code.first != Instruction::INCORRECT)
+                {
+                    // labels generate no machine code
+                    machine_instructions.push_back(machine_code);
+                }
             }
             catch (std::string error)
             {
                 std::cerr << error << '\n';
             }
         }
-        for(auto &instruction : machine_instructions)
+        for (auto &instruction : machine_instructions)
         {
-            //perform second pass and fill out call and jump targets based on label mapping
+            // perform second pass and fill out call and jump targets based on label mapping
+            parser.resolve_targets(instruction);
         }
     }
     void print_instructions()

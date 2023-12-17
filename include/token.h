@@ -4,6 +4,7 @@
 
 enum TokenType
 {
+    TARGET,
     ADDRESS,
     IDENTIFIER,
     REGISTER, 

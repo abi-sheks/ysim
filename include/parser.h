@@ -2,15 +2,57 @@
 #include "instruction.h"
 #include "utilities.h"
 #include <iostream>
+#include <map>
 #include <vector>
 #include <sstream>
 #include "token.h"
 
 class Parser
 {
+private:
+    std::map<std::string, std::string> jump_table;
+
 public:
     Parser() {}
-    typed_mi first_parse(std::vector<token> instr_token, std::string &next_address)
+    void print_jump_table()
+    {
+        for (auto &item : jump_table)
+        {
+            std::cout << item.first << " " << item.second;
+        }
+        std::cout << std::endl;
+    }
+    void resolve_targets(typed_mi &mcode)
+    {
+        if (mcode.first != Instruction::CALL &&
+            mcode.first != Instruction::JMP &&
+            mcode.first != Instruction::JLE &&
+            mcode.first != Instruction::JL &&
+            mcode.first != Instruction::JE &&
+            mcode.first != Instruction::JNE &&
+            mcode.first != Instruction::JGE &&
+            mcode.first != Instruction::JG)
+        {
+            // not a branch instruction
+            return;
+        }
+        auto mcode_words = split_at_whitespaces(mcode.second);
+        // last element is expected to be the label name
+        auto label_name = mcode_words[mcode_words.size() - 1];
+        auto jump_address_pot = jump_table.find(label_name);
+        if (jump_address_pot == jump_table.end())
+        {
+            throw "ERROR : Label does not exist";
+        }
+        auto jump_address = jump_address_pot->second;
+        // since we directly know that a call/jmp instruction is encoded as
+        // 10 characters for address, space, 0x, space, code:func, space, label_name
+        // we can extract string before label_name and append jump address
+        auto new_mcode_base = std::string(mcode.second.begin(), mcode.second.begin() + 17);
+        auto new_mcode = new_mcode_base.append(jump_address);
+        mcode.second = new_mcode;
+    }
+    typed_mi first_parse(std::vector<token> instr_token, std::string &curr_address)
     {
         // given a stream of tokens, the first token must be either an identifier or a label
         // parser will look up syntax according to identifier and verify, then translate to machine code.
@@ -23,12 +65,15 @@ public:
         }
         if (instr_token[0].first == TokenType::LABEL)
         {
-            // there can be no other args
-            if (instr_token.size() != 1)
+            // there can be no other args (apart from address token)
+            if (instr_token.size() != 2)
             {
                 throw "FAILED : Incorrect instruction encountered";
             }
             // logic to add label to symbol table
+            // address is unchanged i.e label has same address as next identifier
+            jump_table.emplace(instr_token[0].second, zero_extend_hex(instr_token[1].second));
+            return std::pair(Instruction::INCORRECT, "Label");
         }
         if (instr_token[0].first == TokenType::IDENTIFIER)
         {
@@ -47,13 +92,11 @@ public:
                 }
                 auto machine_instr = translate_to_machine(gen_instr, instr_token);
                 // still current instructions address
-                instructions.append(zero_extend_hex(next_address));
-                instructions.append("\t");
+                instructions.append(zero_extend_hex(curr_address));
+                instructions.append(" ");
                 instructions.append(machine_instr);
                 // compute next address based on instruction and update next_address for next token
-                // dummy value
-                auto final_address = next_address;
-                next_address = compute_next_address(gen_instr, next_address);
+                curr_address = compute_next_address(gen_instr, curr_address);
                 return std::pair(gen_instr, instructions);
             }
             catch (std::string error)
@@ -159,6 +202,20 @@ private:
             if (tokens[1].first != TokenType::REGISTER || tokens[2].first != TokenType::LITERAL || tokens[3].first != TokenType::REGISTER)
                 return false;
         }
+        if (instr == Instruction::CALL ||
+            instr == Instruction::JMP ||
+            instr == Instruction::JLE ||
+            instr == Instruction::JL ||
+            instr == Instruction::JE ||
+            instr == Instruction::JNE ||
+            instr == Instruction::JGE ||
+            instr == Instruction::JG)
+        {
+            if (tokens.size() != 3)
+                return false;
+            if (tokens[1].first != TokenType::TARGET)
+                return false;
+        }
         // one of the guard clauses entered, and no false returned.
         // mutual exclusivity ensures more than one if cant be entered, pattern works.
         return true;
@@ -224,6 +281,19 @@ private:
                 code.append(" ");
                 code.append(rA);
                 code.append("F");
+            }
+            else if (instr == Instruction::CALL ||
+                     instr == Instruction::JMP ||
+                     instr == Instruction::JLE ||
+                     instr == Instruction::JL ||
+                     instr == Instruction::JE ||
+                     instr == Instruction::JNE ||
+                     instr == Instruction::JGE ||
+                     instr == Instruction::JG)
+            {
+                // in first pass, simply append the target as is, and build symbol table, resolve to address on second pass
+                code.append(" ");
+                code.append(tokens[1].second);
             }
             else
             {

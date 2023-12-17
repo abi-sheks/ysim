@@ -13,19 +13,25 @@ public:
     std::vector<token> tokenize(const std::string &instr)
     {
         std::vector<token> tokens;
-        std::vector<std::string> words = split_into_whitespaces(instr);
-        for (auto &temp : words)
+        std::vector<std::string> words = split_at_whitespaces(instr);
+        if (words[0][0] >= 97 && words[0][0] <= 122)
+        {
+            if (words[0][words[0].length() - 1] == ':')
+            {
+                tokens.push_back(std::pair(TokenType::LABEL, words[0].substr(0, words[0].length() - 1)));
+            }
+            else
+            {
+                tokens.push_back(std::pair(TokenType::IDENTIFIER, words[0]));
+            }
+        }
+        auto words_non_ident = std::vector<std::string>(words.begin() + 1, words.end());
+        for (auto &temp : words_non_ident)
         {
             if (temp[0] >= 97 && temp[0] <= 122)
             {
-                if (temp[temp.length() - 1] == ':')
-                {
-                    tokens.push_back(std::pair(TokenType::LABEL, temp.substr(0, temp.length() - 1)));
-                }
-                else
-                {
-                    tokens.push_back(std::pair(TokenType::IDENTIFIER, temp));
-                }
+                //target name pushed here for call and jmp, actual address will always be at the end of the vector.
+                tokens.push_back(std::pair(TokenType::TARGET, temp));
             }
             else if (temp[0] == '%')
             {
@@ -37,8 +43,8 @@ public:
                 auto literal = temp.substr(1, temp.length());
                 tokens.push_back(std::pair(TokenType::LITERAL, literal));
             }
-            
-            //these cleanly send a [identifier][literal][register] to parser
+
+            // these cleanly send a [identifier][literal][register] to parser
             else if (temp[0] >= 48 && temp[0] <= 57)
             {
                 // only format allowed is D(rA)

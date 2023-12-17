@@ -27,6 +27,15 @@ enum Instruction
     RMMOVQ,
     MRMOVQ,
 
+    CALL,
+    JMP,
+    JLE,
+    JL,
+    JE,
+    JNE,
+    JGE,
+    JG,
+
     INCORRECT
 };
 
