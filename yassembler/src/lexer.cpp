@@ -1,16 +1,6 @@
-#pragma once
-#include "token.h"
-#include "instruction.h"
-#include "utilities.h"
-#include <vector>
-#include <iostream>
-#include <sstream>
-#include <string>
-// simply takes in an instruction and outputs a tokenized version
-class Lexer
-{
-public:
-    std::vector<token> tokenize(const std::string &instr)
+#include "../include/lexer.h"
+
+std::vector<token> Lexer::tokenize(const std::string &instr)
     {
         std::vector<token> tokens;
         std::vector<std::string> words = split_at_whitespaces(instr);
@@ -97,4 +87,3 @@ public:
         }
         return tokens;
     }
-};

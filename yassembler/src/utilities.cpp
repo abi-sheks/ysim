@@ -1,18 +1,4 @@
-#pragma once
-#include "instruction.h"
-#include <iomanip>
-#include <vector>
-#include <map>
-#include <sstream>
-#include <fstream>
-#include <iostream>
-
-typedef std::map<std::string, std::string> register_reference;
-typedef std::map<std::string, Instruction> instruction_reference;
-typedef std::map<Instruction, std::string> specifier_reference;
-typedef std::map<Instruction, int> offset_map;
-
-const std::string REGISTER_FILE_NAME = "../registers.txt";
+#include "../include/utilities.h"
 
 std::vector<std::string> split_at_whitespaces(std::string instr)
 {

@@ -1,9 +1,14 @@
 cmake_minimum_required(VERSION 3.10)
-project(yassembler)
-add_executable(yassembler main.cpp)
+project(ysim)
+add_executable(ysim main.cpp)
 
-add_subdirectory(include)
-target_link_libraries(yassembler PUBLIC include)
-target_include_directories(yassembler PUBLIC
+add_subdirectory(./yassembler yassembler)
+add_subdirectory(./mem mem)
+target_link_libraries(ysim PUBLIC yassembler)
+target_link_libraries(ysim PUBLIC mem)
+target_include_directories(ysim PUBLIC
                            "./build"
-                           "./include")                       
+                           "./yassembler")  
+target_include_directories(ysim PUBLIC
+                           "./build"
+                           "../mem")                       
