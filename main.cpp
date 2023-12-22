@@ -1,4 +1,5 @@
 #include "./yassembler/include/assembler.h"
+#include "./mem/include/utilities.h"
 #include <iostream>
 
 int main(int argc, char **argv)
