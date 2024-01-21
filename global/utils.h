@@ -12,9 +12,10 @@ typedef std::map<std::string, Instruction> instruction_reference;
 typedef std::map<Instruction, std::string> specifier_reference;
 typedef std::map<Instruction, int> offset_map;
 
-static const std::string REGISTER_FILE_NAME = "../registers.txt";
+static const std::string REGISTER_FILE_NAME = "/root/ysim/registers.txt";
 std::vector<std::string> split_at_whitespaces(std::string instr);
 register_reference get_registers();
+register_reference get_registers_for_file();
 instruction_reference get_instr_to_enum();
 specifier_reference get_codes();
 specifier_reference get_function_specs();

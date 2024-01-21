@@ -1,4 +1,5 @@
 #include "../include/parser.h"
+#include "../../global/utils.h"
 #include <stdexcept>
 
 void Parser::print_jump_table()
@@ -58,8 +59,8 @@ typed_mi Parser::first_parse(std::vector<token> instr_token, std::string &curr_a
             throw std::runtime_error("FAILED : Incorrect instruction encountered");
         }
         // logic to add label to symbol table
-        // address is unchanged i.e label has same address as next identifier
-        jump_table.emplace(instr_token[0].second, zero_extend_hex(instr_token[1].second));
+        // address is unchanged i.e label has same address as next identifier, omitting the 0x from address
+        jump_table.emplace(instr_token[0].second, zero_extend_hex(instr_token[1].second).substr(2));
         return std::pair(Instruction::INCORRECT, "Label");
     }
     if (instr_token[0].first == TokenType::IDENTIFIER)
@@ -246,7 +247,8 @@ std::string Parser::translate_to_machine(Instruction instr, std::vector<token> t
             code.append(rA);
             code.append(rB);
             code.append(" ");
-            code.append(zero_extend_hex(tokens[1].second));
+            // omitting the 0x
+            code.append(zero_extend_hex(tokens[1].second).substr(2));
         }
         else if (instr == Instruction::RMMOVQ)
         {
@@ -256,7 +258,8 @@ std::string Parser::translate_to_machine(Instruction instr, std::vector<token> t
             code.append(rA);
             code.append(rB);
             code.append(" ");
-            code.append(zero_extend_hex(tokens[2].second));
+            // omitting the 0x
+            code.append(zero_extend_hex(tokens[2].second).substr(2));
         }
         else if (instr == Instruction::POPQ || instr == Instruction::PUSHQ)
         {
@@ -291,7 +294,7 @@ std::string Parser::translate_to_machine(Instruction instr, std::vector<token> t
         }
         // no constant word currently
     }
-    catch (std::runtime_error& error)
+    catch (std::runtime_error &error)
     {
         throw error;
     }

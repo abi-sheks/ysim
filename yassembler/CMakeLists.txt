@@ -5,9 +5,6 @@ add_library(yassembler
 ./include/parser.h
 ./src/lexer.cpp
 ./include/lexer.h
-./src/utilities.cpp
-./include/utilities.h
-./include/instruction.h
 ./include/token.h
 )
 

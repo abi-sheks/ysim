@@ -1,6 +1,6 @@
 #pragma once
-#include "instruction.h"
-#include "utilities.h"
+#include "../../global/instruction.h"
+#include "../../global/utils.h"
 #include <iostream>
 #include <map>
 #include <vector>

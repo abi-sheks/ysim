@@ -1,4 +1,4 @@
-#include "../include/utilities.h"
+#include "utils.h"
 
 std::vector<std::string> split_at_whitespaces(std::string instr)
 {
@@ -23,6 +23,22 @@ register_reference get_registers()
     {
         auto reg_info = split_at_whitespaces(line);
         result.emplace(reg_info[0], reg_info[1]);
+    }
+    return result;
+}
+
+//quick and shitty solution
+register_reference get_registers_for_file()
+{
+    register_reference result;
+    std::ifstream file_handle;
+    file_handle.open(REGISTER_FILE_NAME);
+    std::string line;
+    while (std::getline(file_handle, line))
+    {
+        auto reg_info = split_at_whitespaces(line);
+        //reverse because while processing we'll refer to the registers by their code
+        result.emplace(reg_info[1], reg_info[0]);
     }
     return result;
 }

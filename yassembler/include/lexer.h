@@ -1,7 +1,7 @@
 #pragma once
 #include "token.h"
-#include "instruction.h"
-#include "utilities.h"
+#include "../../global/instruction.h"
+#include "../../global/utils.h"
 #include <vector>
 #include <iostream>
 #include <sstream>

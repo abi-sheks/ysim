@@ -1,4 +1,5 @@
 #include "./yassembler/include/assembler.h"
+#include "./proc/include/pproc.h"
 // #include "./mem/include/utilities.h"
 #include <iostream>
 
@@ -12,5 +13,7 @@ int main(int argc, char **argv)
     Assembler assembler = Assembler(std::string(argv[1]));
     assembler.assemble();
     assembler.print_machine_instructions();
+    //fill out instruction memory with assembled instruction
+    PipelinedProcessor pprocessor(assembler);
     return 0;
 }
