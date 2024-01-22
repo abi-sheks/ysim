@@ -59,6 +59,7 @@ void Assembler::assemble()
         catch(std::runtime_error& e)
         {
             std::cerr << e.what() << '\n';
+            exit(1);
         }
     }
     for (auto &instruction : machine_instructions)
@@ -71,6 +72,7 @@ void Assembler::assemble()
         catch(std::runtime_error& e)
         {
             std::cerr << e.what() << '\n';
+            exit(1);
         }
     }
 }

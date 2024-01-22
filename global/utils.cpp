@@ -27,7 +27,7 @@ register_reference get_registers()
     return result;
 }
 
-//quick and shitty solution
+// quick and shitty solution
 register_reference get_registers_for_file()
 {
     register_reference result;
@@ -37,7 +37,7 @@ register_reference get_registers_for_file()
     while (std::getline(file_handle, line))
     {
         auto reg_info = split_at_whitespaces(line);
-        //reverse because while processing we'll refer to the registers by their code
+        // reverse because while processing we'll refer to the registers by their code
         result.emplace(reg_info[1], reg_info[0]);
     }
     return result;
@@ -243,7 +243,17 @@ std::string zero_extend_hex(std::string number)
     to_int >> num;
     std::stringstream to_hex;
     to_hex << "0x"
-           << std::setfill('0') << std::setw(sizeof(int) * 2)
+           // one character represents one nibble, so for 8 bytes, 16 characters
+           << std::setfill('0') << std::setw(sizeof(int) * 4)
            << std::hex << num;
     return to_hex.str();
+}
+
+std::string itos(int val)
+{
+    std::stringstream to_string;
+    std::string valstr;
+    to_string << val;
+    to_string >> valstr;
+    return valstr;
 }

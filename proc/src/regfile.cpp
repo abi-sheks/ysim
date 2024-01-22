@@ -19,3 +19,30 @@ RegisterFile::RegisterFile()
         i++;
     }
 }
+
+std::string RegisterFile::read_from_register(char reg_code)
+{
+    for(int i = 0; i < 15; i++)
+    {
+        if(registers[i]->get_code() == reg_code)
+        {
+            //match
+            return registers[i]->read_value();
+        }
+    }
+    throw std::runtime_error("ERROR : Invalid register code");
+}
+void RegisterFile::write_to_register(std::string word, char reg_code)
+{
+    for(int i = 0; i < 15; i++)
+    {
+        if(registers[i]->get_code() == reg_code)
+        {
+            //match
+            registers[i]->write_value(word);
+            return;
+        }
+    }
+    throw std::runtime_error("ERROR : Invalid register code");
+}
+
