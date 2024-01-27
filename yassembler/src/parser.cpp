@@ -26,7 +26,7 @@ void Parser::resolve_targets(typed_mi &mcode)
     }
     auto mcode_words = split_at_whitespaces(mcode.second);
     // last element is expected to be the label name
-    auto label_name = mcode_words[mcode_words.size() - 1];
+    auto label_name = mcode_words.back();
     auto jump_address_pot = jump_table.find(label_name);
     if (jump_address_pot == jump_table.end())
     {
@@ -34,9 +34,9 @@ void Parser::resolve_targets(typed_mi &mcode)
     }
     auto jump_address = jump_address_pot->second;
     // since we directly know that a call/jmp instruction is encoded as
-    // 10 characters for address, space, 0x, space, code:func, space, label_name
+    // 18 characters for address, space, 0x, space, code:func, space, label_name
     // we can extract string before label_name and append jump address
-    auto new_mcode_base = std::string(mcode.second.begin(), mcode.second.begin() + 17);
+    auto new_mcode_base = std::string(mcode.second.begin(), mcode.second.begin() + 25);
     auto new_mcode = new_mcode_base.append(jump_address);
     mcode.second = new_mcode;
 }
@@ -328,7 +328,7 @@ std::string Parser::compute_next_address(Instruction instr, std::string current_
     std::stringstream to_int;
     to_int << current_address;
     to_int >> addr_in_bytes;
-    // adding +8 for 1 byte
+    // adding +16 for 1 byte
     auto offsets = get_offsets();
     if (offsets.find(instr) == offsets.end())
     {

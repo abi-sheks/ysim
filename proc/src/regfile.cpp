@@ -11,7 +11,7 @@ RegisterFile::RegisterFile()
     {
         auto reg_info = split_at_whitespaces(line);
         //known that reg_info[0] (code) is one character long
-        if(reg_info[0].length() != 1)
+        if(reg_info[1].length() != 1)
         {
             throw std::runtime_error("ERROR : Registers file is invalid");
         }

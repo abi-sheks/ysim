@@ -1,5 +1,5 @@
 #pragma once
-#include <vector>
+#include <map>
 #include <string>
 #include <algorithm>
 #include "../../yassembler/include/assembler.h"
@@ -8,6 +8,7 @@ class InstructionMemory
 {
     private:
     public:
-    std::vector<std::string> instructions;
+    std::map<std::string, std::string> instructions;
     InstructionMemory(Assembler &ass);
+    
 };

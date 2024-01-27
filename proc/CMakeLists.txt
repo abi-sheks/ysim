@@ -1,6 +1,6 @@
 
-add_library(proc ./include/pipeline_reg.h
-		 		 ./src/pipeline_reg.cpp
+add_library(proc ./include/reg.h
+		 		 ./src/reg.cpp
 				 ./include/regfile.h
 		 		 ./src/regfile.cpp
 				 ./include/alu.h
@@ -8,4 +8,6 @@ add_library(proc ./include/pipeline_reg.h
 				 ./include/instr_mem.h
 		 		 ./src/instr_mem.cpp
 				 ./include/seqproc.h
+				 ./src/seqproc.cpp
+				 ./include/cnd_flags.h
 				 )

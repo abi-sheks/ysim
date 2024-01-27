@@ -2,7 +2,7 @@
 #include <climits>
 
 // processing each of the two nibbles that come with each instruction specifier. one char == one nibble (0 to F)
-std::string ALU::execute_instruction(char code_nib, char func_nib, word valA, word valB, word valC)
+std::string ALU::execute_instruction(char code_nib, char func_nib, word valA, word valB, word valC, CndCodes &cnds)
 {
     // returns whatever valE is required, will later change condition codes
     // halt
@@ -40,6 +40,12 @@ std::string ALU::execute_instruction(char code_nib, char func_nib, word valA, wo
             e_int = b_int | a_int;
         else
             throw std::runtime_error("ERROR : Invalid operation");
+        if (e_int == 0)
+            cnds.toggle_ZF();
+        if (e_int < 0)
+            cnds.toggle_SF();
+        if ((a_int < 0 == b_int < 0) && (e_int < 0 != a_int < 0))
+            cnds.toggle_OF();
         auto valE = itos(e_int);
         return zero_extend_hex(valE).substr(2);
     }
@@ -51,12 +57,56 @@ std::string ALU::execute_instruction(char code_nib, char func_nib, word valA, wo
         std::string valE = itos(e_int);
         return zero_extend_hex(valE).substr(2);
     }
-    //push and pop
+    // push and pop
     if ((code_nib == 'A' && func_nib == '0') || (code_nib == 'B' && func_nib == '0'))
     {
         auto multiplier = code_nib == 'A' ? -1 : 1;
         size_t e_int = atoi(valB.c_str()) + (multiplier * 8);
         std::string valE = itos(e_int);
         return zero_extend_hex(valE).substr(2);
+    }
+    // rrmovq
+    if (code_nib == '2')
+    {
+        std::string valE;
+        if (func_nib == '0')
+            valE = valA;
+        else if (func_nib == '1')
+        {
+            (cnds.get_sf() ^ cnds.get_of()) | cnds.get_zf() ? valE = valA : valE = "";
+        }
+        else if (func_nib == '2')
+            ((cnds.get_sf() ^ cnds.get_of())) ? valE = valA : valE = "";
+        else if (func_nib == '3')
+            cnds.get_zf() ? valE = valA : valE = "";
+        else if (func_nib == '4')
+            ~cnds.get_zf() ? valE = valA : valE = "";
+        else if (func_nib == '5')
+            (~(cnds.get_sf() ^ cnds.get_of())) ? valE = valA : valE = "";
+        else if (func_nib == '6')
+            ~((cnds.get_sf() ^ cnds.get_of()) | cnds.get_zf()) ? valE = valA : valE = "";
+        else
+            throw std::runtime_error("ERROR : Invalid function code");
+        return valE;
+    }
+    if (code_nib == '7')
+    {
+        if (func_nib == '0')
+            cnds.setCnd(true);
+        else if (func_nib == '1')
+            cnds.setCnd((cnds.get_sf() ^ cnds.get_of()) | cnds.get_zf());
+        else if (func_nib == '2')
+            cnds.setCnd(cnds.get_sf() ^ cnds.get_of());
+        else if (func_nib == '3')
+            cnds.setCnd(cnds.get_zf());
+        else if (func_nib == '4')
+            cnds.setCnd(~cnds.get_zf());
+        else if (func_nib == '5')
+            cnds.setCnd(~(cnds.get_sf() ^ cnds.get_of()));
+        else if (func_nib == '6')
+            cnds.setCnd(~((cnds.get_sf() ^ cnds.get_of()) | cnds.get_zf()));
+        else
+            throw std::runtime_error("ERROR : Invalid function code");
+        return "";
     }
 }
