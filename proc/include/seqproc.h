@@ -3,20 +3,29 @@
 #include "regfile.h"
 #include "alu.h"
 #include "cnd_flags.h"
+#include <stdexcept>
+#include <sstream>
+#include <iomanip>
 #include "../../yassembler/include/assembler.h"
+#include "../../global/utils.h"
 
 
 
 class Processor
 {
 private:
+    //helper
+    std::string get_next_valp(int length, std::string current_addr);
     InstructionMemory *instr_memory;
     RegisterFile *register_file;
     ALU *alu;
     CndCodes*cnds;
     //all 8 bytees / 16 chars
+    //all the words represent data in decimal format for now, will later make it so that they store hex 
     char icode;
     char ifun;
+    char rA;
+    char rB;
     word valA;
     word PC;
     word valM;
@@ -37,6 +46,10 @@ public:
             cnds = new CndCodes();
             //
             PC = "0000000000000000";
+            rA = 'F';
+            rB = 'F';
+            icode = 'F';
+            ifun = 'F';
         }
         catch (const std::exception &e)
         {
@@ -45,9 +58,10 @@ public:
         }
     }
     void instruction_loop();
-    std::string fetch();
+    void fetch();
     void decode();
     void execute();
     void memory();
     void write_back();
+    void pc_update();
 };

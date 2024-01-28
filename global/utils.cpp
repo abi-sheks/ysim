@@ -1,5 +1,8 @@
 #include "utils.h"
 
+
+//these are mostly used in the assembler, the processor has to process the "inverse" of these maps, so to speak,
+//so for now the processor just differentiates with some simple if statements.
 std::vector<std::string> split_at_whitespaces(std::string instr)
 {
     std::stringstream mystream(instr);
@@ -245,7 +248,7 @@ std::string zero_extend_hex(std::string number)
     to_hex << "0x"
            // one character represents one nibble, so for 8 bytes, 16 characters
            << std::setfill('0') << std::setw(sizeof(int) * 4)
-           << std::hex << num;
+           << num;
     return to_hex.str();
 }
 

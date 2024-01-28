@@ -15,5 +15,6 @@ int main(int argc, char **argv)
     assembler.print_machine_instructions();
     //fill out instruction memory with assembled instruction
     Processor pprocessor(assembler);
+    pprocessor.instruction_loop();
     return 0;
 }

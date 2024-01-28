@@ -109,4 +109,5 @@ std::string ALU::execute_instruction(char code_nib, char func_nib, word valA, wo
             throw std::runtime_error("ERROR : Invalid function code");
         return "";
     }
+    throw std::runtime_error("ERROR : Invalid instruction encountered at execute stage");
 }

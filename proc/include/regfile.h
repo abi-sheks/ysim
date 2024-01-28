@@ -8,7 +8,6 @@
 class RegisterFile
 {
 private:
-    register_reference register_ref;
     Register**registers; 
 
 public:

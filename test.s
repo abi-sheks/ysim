@@ -1,6 +1,7 @@
 main:
 addq %rax %rbx
 addq %rbx %rcx
+call subroutine
 jmp subroutine
 
 subroutine:
