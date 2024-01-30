@@ -43,6 +43,7 @@ public:
             instr_memory = new InstructionMemory(ass);
             alu = new ALU();
             register_file = new RegisterFile();
+            register_file->initialize_registers();
             cnds = new CndCodes();
             //
             PC = "0000000000000000";

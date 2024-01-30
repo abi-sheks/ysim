@@ -5,5 +5,5 @@ Register::Register(std::string name, char code)
     name = name;
     code = code;
     //initialising at 0
-    value = '0000000000000000';
+    value = "0000000000000000";
 }

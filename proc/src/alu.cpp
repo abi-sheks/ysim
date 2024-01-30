@@ -92,19 +92,19 @@ std::string ALU::execute_instruction(char code_nib, char func_nib, word valA, wo
     if (code_nib == '7')
     {
         if (func_nib == '0')
-            cnds.setCnd(true);
+            cnds.set_cnd(true);
         else if (func_nib == '1')
-            cnds.setCnd((cnds.get_sf() ^ cnds.get_of()) | cnds.get_zf());
+            cnds.set_cnd((cnds.get_sf() ^ cnds.get_of()) | cnds.get_zf());
         else if (func_nib == '2')
-            cnds.setCnd(cnds.get_sf() ^ cnds.get_of());
+            cnds.set_cnd(cnds.get_sf() ^ cnds.get_of());
         else if (func_nib == '3')
-            cnds.setCnd(cnds.get_zf());
+            cnds.set_cnd(cnds.get_zf());
         else if (func_nib == '4')
-            cnds.setCnd(~cnds.get_zf());
+            cnds.set_cnd(~cnds.get_zf());
         else if (func_nib == '5')
-            cnds.setCnd(~(cnds.get_sf() ^ cnds.get_of()));
+            cnds.set_cnd(~(cnds.get_sf() ^ cnds.get_of()));
         else if (func_nib == '6')
-            cnds.setCnd(~((cnds.get_sf() ^ cnds.get_of()) | cnds.get_zf()));
+            cnds.set_cnd(~((cnds.get_sf() ^ cnds.get_of()) | cnds.get_zf()));
         else
             throw std::runtime_error("ERROR : Invalid function code");
         return "";

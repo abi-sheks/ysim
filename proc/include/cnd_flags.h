@@ -17,7 +17,8 @@ public:
         zf = 0;
         cnd = false;
     }
-    void setCnd(bool set) { cnd = set; }
+    void set_cnd(bool set) { cnd = set; }
+    bool get_cnd() {return cnd;}
     int get_of() { return of; }
     int get_sf() { return sf; }
     int get_zf() { return zf; }
