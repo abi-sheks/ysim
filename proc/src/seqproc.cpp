@@ -12,6 +12,7 @@ void Processor::instruction_loop()
         memory();
         write_back();
         pc_update();
+        std::cout << "cycle : " << i + 1 << " done. PC at " << PC << "\n";
     }
 }
 
@@ -118,7 +119,37 @@ void Processor::execute()
 
 void Processor::memory()
 {
-
+    // as its a map with no specified range, when it gets an instruction referring to memory that hasnt been added to the map already,
+    // it just zero intitializes that location.
+    if (icode == '5')
+    {
+        auto required_word = main_memory.find(valE);
+        if (required_word == main_memory.end())
+        {
+            main_memory.emplace(valE, std::string('0', 16));
+        }
+        valM = main_memory[valE];
+    }
+    else if (icode == '4' || icode == 'A')
+    {
+        main_memory[valE] = valA;
+    }
+    else if (icode == 'B' || icode == '9')
+    {
+        // this case is not logically possible, considering call and push are implemented properly, but it cant hurt to be safe right?
+        auto required_word = main_memory.find(valA);
+        if (required_word == main_memory.end())
+        {
+            main_memory.emplace(valE, std::string('0', 16));
+        }
+        valM = main_memory[valA];
+    }
+    else if (icode == '8')
+    {
+        main_memory[valE] = valP;
+    }
+    else
+        return;
 }
 void Processor::write_back()
 {
@@ -153,6 +184,15 @@ void Processor::pc_update()
     if (icode == '7')
     {
         PC = cnds->get_cnd() ? valC : valP;
+    }
+}
+
+void Processor::exreg()
+{
+    auto register_refs = get_registers();
+    for (auto &reg_ref : register_refs)
+    {
+        std::cout << "REGISTER : " << reg_ref.first << " -> " << register_file->read_from_register(reg_ref.second[0]) << "\n";
     }
 }
 

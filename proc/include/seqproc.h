@@ -20,12 +20,13 @@ private:
     RegisterFile *register_file;
     ALU *alu;
     CndCodes*cnds;
-    //all 8 bytees / 16 chars
-    //all the words represent data in decimal format for now, will later make it so that they store hex 
+    // condition codes
     char icode;
     char ifun;
     char rA;
     char rB;
+    //all 8 bytes / 16 chars
+    //all the words represent data in decimal format for now, will later make it so that they store hex 
     word valA;
     word PC;
     word valM;
@@ -33,7 +34,9 @@ private:
     word valB;
     word valC;
     word valP;
-    // condition codes
+    //for now, main memory is implemented as a map of strings to strings.
+    //proper cache integration in another life, maybe.
+    std::map<word, word> main_memory;
 
 public:
     Processor(Assembler &ass)
@@ -65,4 +68,6 @@ public:
     void memory();
     void write_back();
     void pc_update();
+    void exreg();
+    void exmem(word location) { std::cout << "At location : " << location << " -> " << main_memory[location] << "\n";}
 };

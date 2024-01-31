@@ -237,7 +237,7 @@ std::string Parser::translate_to_machine(Instruction instr, std::vector<token> t
             code.append("F");
             code.append(rB);
             code.append(" ");
-            code.append(zero_extend_hex(tokens[1].second));
+            code.append(zero_extend_hex(tokens[1].second).substr(2));
         }
         else if (instr == Instruction::MRMOVQ)
         {

@@ -16,5 +16,6 @@ int main(int argc, char **argv)
     //fill out instruction memory with assembled instruction
     Processor pprocessor(assembler);
     pprocessor.instruction_loop();
+    pprocessor.exreg();
     return 0;
 }
